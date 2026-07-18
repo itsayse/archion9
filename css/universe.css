@@ -1,0 +1,230 @@
+/* =========================================================================
+   Phase 4 — the hidden universe
+   ========================================================================= */
+
+.scene--universe{
+  background: radial-gradient(ellipse at 50% 30%, #0c0a20 0%, var(--uni-bg) 60%, #020103 100%);
+  color: var(--uni-text);
+  cursor: none;
+}
+
+.scene--universe.is-shaking{
+  animation: universe-shake .5s cubic-bezier(.36,.07,.19,.97) both;
+}
+@keyframes universe-shake{
+  0%, 100%{ transform: translate(0,0); }
+  10%{ transform: translate(-8px,-4px) rotate(-0.4deg); }
+  20%{ transform: translate(7px,3px) rotate(0.4deg); }
+  30%{ transform: translate(-6px,4px) rotate(-0.3deg); }
+  40%{ transform: translate(6px,-3px) rotate(0.3deg); }
+  50%{ transform: translate(-5px,2px); }
+  60%{ transform: translate(5px,-2px); }
+  70%{ transform: translate(-3px,2px); }
+  80%{ transform: translate(3px,-1px); }
+  90%{ transform: translate(-1px,1px); }
+}
+
+#starfield{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.matrix-rain{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 60;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s ease;
+}
+.matrix-rain.is-active{ opacity: .9; }
+
+.nebula{
+  position: absolute;
+  inset: -10%;
+  pointer-events: none;
+  background:
+    radial-gradient(600px 400px at 20% 30%, rgba(123,47,247,.18), transparent 60%),
+    radial-gradient(500px 380px at 80% 70%, rgba(255,46,146,.14), transparent 60%),
+    radial-gradient(700px 500px at 60% 20%, rgba(69,242,223,.08), transparent 60%);
+  mix-blend-mode: screen;
+  animation: nebula-drift 40s ease-in-out infinite alternate;
+}
+@keyframes nebula-drift{
+  0%{ transform: translate(0,0) scale(1); }
+  100%{ transform: translate(-2%, 2%) scale(1.05); }
+}
+
+.universe-parallax{
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.planet{
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(.3px);
+}
+.planet--a{
+  width: clamp(40px, 5vw, 70px);
+  height: clamp(40px, 5vw, 70px);
+  left: 8%;
+  bottom: 18%;
+  background: radial-gradient(circle at 35% 30%, var(--uni-magenta), #4a0f3d 80%);
+  box-shadow: 0 0 30px rgba(255,46,146,.35);
+  animation: planet-orbit-a 24s ease-in-out infinite;
+}
+.planet--b{
+  width: clamp(20px, 2.6vw, 34px);
+  height: clamp(20px, 2.6vw, 34px);
+  left: 40%;
+  top: 65%;
+  background: radial-gradient(circle at 35% 30%, var(--uni-cyan), #0a3733 80%);
+  box-shadow: 0 0 24px rgba(69,242,223,.4);
+  animation: planet-orbit-b 18s ease-in-out infinite;
+}
+.planet--c{
+  width: clamp(10px, 1.3vw, 18px);
+  height: clamp(10px, 1.3vw, 18px);
+  right: 12%;
+  top: 20%;
+  background: radial-gradient(circle at 35% 30%, var(--uni-violet), #170a33 80%);
+  box-shadow: 0 0 18px rgba(123,47,247,.45);
+  animation: planet-orbit-c 26s ease-in-out infinite;
+  opacity: .8;
+}
+@keyframes planet-orbit-a{
+  0%, 100%{ transform: translate(0,0); }
+  50%{ transform: translate(30px,-18px); }
+}
+@keyframes planet-orbit-b{
+  0%, 100%{ transform: translate(0,0); }
+  50%{ transform: translate(-22px,14px); }
+}
+@keyframes planet-orbit-c{
+  0%, 100%{ transform: translate(0,0) scale(1); }
+  50%{ transform: translate(-16px,20px) scale(1.08); }
+}
+
+.satellite{
+  position: absolute;
+  top: 38%;
+  left: 22%;
+  width: 46px;
+  height: 20px;
+  animation: satellite-drift 30s linear infinite;
+}
+.satellite__body{
+  position: absolute;
+  left: 18px; top: 6px;
+  width: 10px; height: 8px;
+  background: #cfd8ea;
+  border-radius: 2px;
+  box-shadow: 0 0 6px rgba(207,216,234,.7);
+}
+.satellite__panel{
+  position: absolute;
+  top: 3px;
+  width: 16px; height: 14px;
+  background: linear-gradient(180deg, var(--uni-cyan), #0b3b37);
+  opacity: .85;
+}
+.satellite__panel--l{ left: 0; }
+.satellite__panel--r{ right: 0; }
+@keyframes satellite-drift{
+  0%{ transform: translate(0,0) rotate(0deg); }
+  50%{ transform: translate(40vw, 6vh) rotate(8deg); }
+  100%{ transform: translate(0,0) rotate(0deg); }
+}
+
+.universe-hud{
+  position: absolute;
+  top: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 30;
+  pointer-events: none;
+}
+.universe-hud__title{
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(16px, 2.4vw, 22px);
+  letter-spacing: .18em;
+  font-weight: 600;
+  color: var(--uni-text);
+  text-shadow: 0 0 18px rgba(69,242,223,.45);
+}
+.universe-hud__sub{
+  display: block;
+  margin-top: 4px;
+  font-size: 11.5px;
+  color: rgba(220,230,255,.55);
+  letter-spacing: .04em;
+}
+
+.return-hint{
+  position: absolute;
+  bottom: 18px;
+  right: 24px;
+  font-size: 11px;
+  color: rgba(220,230,255,.4);
+  z-index: 30;
+}
+.return-hint kbd{
+  border: 1px solid rgba(220,230,255,.3);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: var(--font-mono);
+}
+
+.made-by{
+  position: absolute;
+  bottom: 18px;
+  left: 24px;
+  font-size: 11px;
+  letter-spacing: .04em;
+  color: rgba(220,230,255,.35);
+  z-index: 30;
+}
+
+/* custom cursor */
+.custom-cursor{
+  position: fixed;
+  top: 0; left: 0;
+  width: 18px; height: 18px;
+  border: 1px solid var(--uni-cyan);
+  border-radius: 50%;
+  transform: translate(-50%,-50%);
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity .2s ease, width .15s ease, height .15s ease, background .15s ease;
+}
+.custom-cursor::after{
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 3px; height: 3px;
+  background: var(--uni-cyan);
+  border-radius: 50%;
+  transform: translate(-50%,-50%);
+}
+.custom-cursor.is-visible{ opacity: 1; }
+.custom-cursor.is-hover{
+  width: 30px; height: 30px;
+  background: rgba(69,242,223,.08);
+}
+
+@media (max-width: 720px){
+  .window--terminal, .window--log, .window--shadow{ left: 4vw; right: 4vw; width: 92vw; }
+  .window--log{ top: auto; bottom: 8vh; }
+  .window--terminal{ top: 10vh; }
+  .window--shadow{ top: 36vh; }
+}

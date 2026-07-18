@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ARCHION-9 :: file index</title>
+<meta name="description" content="ARCHION-9 archival node. Read-only mirror." />
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/crt.css">
+<link rel="stylesheet" href="css/terminal.css">
+<link rel="stylesheet" href="css/universe.css">
+<link rel="stylesheet" href="css/desktop.css">
+</head>
+<body data-scene="server">
+
+  <!-- ================= CRT / SCREEN OVERLAY (persists across all scenes) ================= -->
+  <div class="crt-overlay" aria-hidden="true">
+    <div class="crt-scanlines"></div>
+    <div class="crt-vignette"></div>
+    <div class="crt-flicker"></div>
+    <div class="crt-rgb-split" id="rgbSplit"></div>
+  </div>
+
+  <!-- ================= PHASE 1: FAKE FILE SERVER ================= -->
+  <main class="scene scene--server" id="sceneServer">
+    <header class="server-topbar">
+      <div class="server-topbar__brand">
+        <span class="dot dot--idle"></span>
+        <span>ARCHION&#8209;9</span>
+        <span class="server-topbar__path">/ index /</span>
+      </div>
+      <div class="server-topbar__stats">
+        <span id="uptimeStat">uptime 000d 00:00:00</span>
+        <span class="sep">|</span>
+        <span id="clockStat">--:--:--</span>
+      </div>
+    </header>
+
+    <section class="server-panel">
+      <div class="server-panel__head">
+        <span>read-only archival mirror</span>
+        <span class="blinking-cursor">_</span>
+      </div>
+
+      <table class="file-table" id="fileTable">
+        <thead>
+          <tr>
+            <th class="col-name">name</th>
+            <th class="col-size">size</th>
+            <th class="col-mod">modified</th>
+            <th class="col-type">type</th>
+          </tr>
+        </thead>
+        <tbody id="fileTableBody">
+          <!-- populated by fakeServer.js -->
+        </tbody>
+      </table>
+    </section>
+
+    <footer class="server-footer">
+      <div class="server-footer__storage">
+        <span>storage</span>
+        <div class="storage-bar"><div class="storage-bar__fill" id="storageFill"></div></div>
+        <span id="storagePercent">71%</span>
+      </div>
+      <div class="server-footer__status">
+        <span>conn: <b id="connCount">1</b></span>
+        <span class="sep">|</span>
+        <span>status: <span id="statusWord">idle</span><span class="blinking-cursor">_</span></span>
+      </div>
+      <div class="server-footer__credit">made by AYSE &mdash; 2026</div>
+    </footer>
+  </main>
+
+  <!-- ================= PHASE 2: DISCOVERY / BOOT SEQUENCE ================= -->
+  <section class="scene scene--boot" id="sceneBoot" aria-hidden="true">
+    <div class="boot-screen">
+      <pre class="boot-log" id="bootLog"></pre>
+      <div class="boot-loadbar">
+        <div class="boot-loadbar__fill" id="bootLoadFill"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PHASE 3: COLLAPSE (shatter clone lives here) ================= -->
+  <div class="collapse-layer" id="collapseLayer" aria-hidden="true"></div>
+  <div class="blackout" id="blackout" aria-hidden="true"></div>
+  <div class="screen-tear" id="screenTear" aria-hidden="true">
+    <div class="screen-tear__top"></div>
+    <div class="screen-tear__bottom"></div>
+  </div>
+
+  <!-- ================= PHASE 4: HIDDEN UNIVERSE ================= -->
+  <section class="scene scene--universe" id="sceneUniverse" aria-hidden="true">
+    <canvas id="starfield"></canvas>
+    <canvas id="matrixRain" class="matrix-rain" aria-hidden="true"></canvas>
+
+    <div class="universe-parallax" id="universeParallax">
+      <div class="planet planet--a"></div>
+      <div class="planet planet--b"></div>
+      <div class="planet planet--c"></div>
+      <div class="satellite" id="satellite">
+        <div class="satellite__body"></div>
+        <div class="satellite__panel satellite__panel--l"></div>
+        <div class="satellite__panel satellite__panel--r"></div>
+      </div>
+    </div>
+
+    <div class="nebula" aria-hidden="true"></div>
+
+    <header class="universe-hud">
+      <span class="universe-hud__title">UNDERNET // AETHERLANE</span>
+      <span class="universe-hud__sub">signal locked &mdash; you were not supposed to find this</span>
+    </header>
+
+    <!-- Floating window: interactive terminal -->
+    <div class="window window--terminal" id="winTerminal" data-window>
+      <div class="window__titlebar" data-drag-handle>
+        <span class="window__title">terminal &mdash; aetherlane_shell</span>
+        <div class="window__controls">
+          <button class="window__btn" data-action="minimize" aria-label="Minimize">&#95;</button>
+          <button class="window__btn" data-action="close" aria-label="Close">&times;</button>
+        </div>
+      </div>
+      <div class="window__body">
+        <div class="term-output" id="termOutput"></div>
+        <div class="term-input-row">
+          <span class="term-prompt">guest@aetherlane:~$</span>
+          <input type="text" class="term-input" id="termInput" autocomplete="off" spellcheck="false" aria-label="Terminal input" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating window: transmission log easter-egg panel -->
+    <div class="window window--log" id="winLog" data-window>
+      <div class="window__titlebar" data-drag-handle>
+        <span class="window__title">incoming_transmission.log</span>
+        <div class="window__controls">
+          <button class="window__btn" data-action="minimize" aria-label="Minimize">&#95;</button>
+          <button class="window__btn" data-action="close" aria-label="Close">&times;</button>
+        </div>
+      </div>
+      <div class="window__body window__body--log" id="logBody">
+        <p>[00:00:01] connection re-established after unknown interval.</p>
+        <p>[00:00:04] you are the first visitor since the archive forgot itself.</p>
+        <p>[00:00:09] type <span class="hl">help</span> in the terminal if you want a way out. or don't.</p>
+        <p>[00:00:14] some doors respond to <span class="hl">&uarr;&uarr;&darr;&darr;&larr;&rarr;&larr;&rarr; b a</span>. old muscle memory helps.</p>
+        <p>[00:00:19] real signal, off the archive: <a href="https://discord.gg/x2PtTvWTmd" target="_blank" rel="noopener noreferrer" class="hl star-link" aria-label="real signal — discord invite">&#9733;</a>. we're still here.</p>
+        <p>[00:00:26] if it's ever too much, there's a word that ends this place. starts with <span class="hl">n</span>. we only say it once, so we won't.</p>
+      </div>
+    </div>
+
+    <button class="minimized-dock" id="minimizedDock" aria-hidden="true"></button>
+
+    <div class="return-hint" id="returnHint">press <kbd>esc</kbd> to drift back to the surface</div>
+    <div class="made-by">made by AYSE &mdash; 2026</div>
+  </section>
+
+  <!-- ================= PHASE 5: HIDDEN EARTH (unlocked on the 3rd successful `hack`) ================= -->
+  <section class="scene scene--desktop" id="sceneDesktop" aria-hidden="true">
+    <div class="desktop-bg"></div>
+
+    <div class="desktop-icons">
+      <button class="desktop-icon" data-desktop-action="open-terminal">
+        <span class="desktop-icon__glyph">&gt;_</span>
+        <span class="desktop-icon__label">MS-DOS Prompt</span>
+      </button>
+      <button class="desktop-icon" data-desktop-action="open-about">
+        <span class="desktop-icon__glyph">i</span>
+        <span class="desktop-icon__label">About AYSE</span>
+      </button>
+      <button class="desktop-icon" data-desktop-action="open-mycomputer">
+        <span class="desktop-icon__glyph">&#128421;</span>
+        <span class="desktop-icon__label">My Computer</span>
+      </button>
+      <button class="desktop-icon" data-desktop-action="open-explorer">
+        <span class="desktop-icon__glyph">&#128193;</span>
+        <span class="desktop-icon__label">File Explorer</span>
+      </button>
+    </div>
+
+    <!-- MS-DOS style terminal window -->
+    <div class="window window--dos" id="winDos" data-window>
+      <div class="window__titlebar window__titlebar--dos" data-drag-handle>
+        <span class="window__title">MS-DOS Prompt</span>
+        <div class="window__controls">
+          <button class="window__btn" data-action="minimize" aria-label="Minimize">&#95;</button>
+          <button class="window__btn" data-action="close" aria-label="Close">&times;</button>
+        </div>
+      </div>
+      <div class="window__body window__body--dos">
+        <div class="term-output term-output--dos" id="dosOutput"></div>
+        <div class="term-input-row term-input-row--dos">
+          <span class="term-prompt term-prompt--dos">C:\AETHERLANE&gt;</span>
+          <input type="text" class="term-input term-input--dos" id="dosInput" autocomplete="off" spellcheck="false" aria-label="MS-DOS terminal input" />
+        </div>
+      </div>
+    </div>
+
+    <!-- About window, Windows-9x styled — this is where "about" now lives, not in space -->
+    <div class="window window--winabout is-minimized" id="winAboutDesktop" data-window>
+      <div class="window__titlebar window__titlebar--dos" data-drag-handle>
+        <span class="window__title">About AYSE.exe</span>
+        <div class="window__controls">
+          <button class="window__btn" data-action="minimize" aria-label="Minimize">&#95;</button>
+          <button class="window__btn" data-action="close" aria-label="Close">&times;</button>
+        </div>
+      </div>
+      <div class="window__body winabout-body">
+        <img src="assets/img/tiktok_pfp.jpg" alt="AYSE avatar" class="winabout-avatar" />
+        <div class="winabout-text">
+          <h3>AYSE</h3>
+          <p>builds small worlds that hide until someone finds them.</p>
+          <p>terminal toys, trapdoors, the occasional archive that isn't what it says it is. if you're reading this, you found the real one.</p>
+          <p><a href="https://github.com/itsayse" target="_blank" rel="noopener noreferrer" class="term-link">github.com/itsayse</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Small system-dialog window, reused by "My Computer" and other desktop popups -->
+    <div class="window window--sysdialog is-minimized" id="winSysDialog" data-window>
+      <div class="window__titlebar window__titlebar--dos" data-drag-handle>
+        <span class="window__title" id="sysDialogTitle">System</span>
+        <div class="window__controls">
+          <button class="window__btn" data-action="minimize" aria-label="Minimize">&#95;</button>
+          <button class="window__btn" data-action="close" aria-label="Close">&times;</button>
+        </div>
+      </div>
+      <div class="window__body sysdialog-body">
+        <p id="sysDialogText">—</p>
+        <button class="sysdialog-ok" id="sysDialogOk">OK</button>
+      </div>
+    </div>
+
+    <!-- File Explorer — the "find out if I'm online" easter egg -->
+    <div class="window window--explorer is-minimized" id="winExplorer" data-window>
+      <div class="window__titlebar window__titlebar--dos" data-drag-handle>
+        <span class="window__title">C:\AETHERLANE\the_person</span>
+        <div class="window__controls">
+          <button class="window__btn" data-action="minimize" aria-label="Minimize">&#95;</button>
+          <button class="window__btn" data-action="close" aria-label="Close">&times;</button>
+        </div>
+      </div>
+      <div class="window__body explorer-body">
+        <section class="explorer-section">
+          <div class="explorer-section__head">discord_presence.sys</div>
+          <div class="explorer-status" id="explorerDiscordStatus">
+            <span class="explorer-status__dot explorer-status__dot--loading"></span>
+            <span id="explorerDiscordText">checking signal...</span>
+          </div>
+        </section>
+        <section class="explorer-section">
+          <div class="explorer-section__head">repositories/</div>
+          <ul class="explorer-filelist" id="explorerRepoList">
+            <li class="explorer-file explorer-file--loading">reading directory...</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+
+    <div class="bsod" id="bsod" aria-hidden="true">
+      <div class="bsod__inner">
+        <p class="bsod__header">AETHERLANE</p>
+        <p>A fatal exception has occurred at 0028:C0011E36 in VXD ARCHION9(01).</p>
+        <p>The current application will be terminated.</p>
+        <p class="bsod__blank">&nbsp;</p>
+        <p>* Press any key to return to the desktop.</p>
+        <p>* Press CTRL+ALT+DEL to restart your computer. You will</p>
+        <p>&nbsp;&nbsp;lose any unsaved information in all applications.</p>
+        <p class="bsod__blank">&nbsp;</p>
+        <p class="bsod__blink">Press any key to continue&#95;</p>
+      </div>
+    </div>
+
+    <div class="taskbar">
+      <button class="start-btn" id="startBtn">&#8862; Start</button>
+      <div class="taskbar__clock" id="desktopClock">--:--</div>
+    </div>
+
+    <div class="return-hint return-hint--desktop">press <kbd>esc</kbd> to drift back to the stars</div>
+  </section>
+
+  <div class="custom-cursor" id="customCursor" aria-hidden="true"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/fakeServer.js"></script>
+  <script src="js/glitch.js"></script>
+  <script src="js/discovery.js"></script>
+  <script src="js/collapse.js"></script>
+  <script src="js/universe.js"></script>
+  <script src="js/windowManager.js"></script>
+  <script src="js/explorer.js"></script>
+  <script src="js/terminalApp.js"></script>
+  <script src="js/desktop.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
