@@ -4,10 +4,6 @@
 
 <br>
 
-<img src="https://capsule-render.vercel.app/api?type=waving&height=180&color=0:05040F,40:7B2FF7,100:45F2DF&text=TRANSMISSION&fontSize=42&fontColor=ffffff&animation=fadeIn" />
-
-# 📡 SIGNAL RECEIVED
-
 ### You weren't meant to find this repository.
 
 This archive is only a fragment.
@@ -31,7 +27,5 @@ The rest of the transmission exists elsewhere.
 > **Experience it.**
 
 *Some things make more sense when you see them for yourself.*
-
-<img src="https://capsule-render.vercel.app/api?type=waving&height=120&section=footer&color=0:45F2DF,50:7B2FF7,100:05040F"/>
 
 </div>
