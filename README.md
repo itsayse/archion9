@@ -1,8 +1,4 @@
-<div align="center">
 
-<img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=700&size=28&duration=3200&pause=900&color=45F2DF&center=true&vCenter=true&width=900&lines=CONNECTION+ESTABLISHED...;ARCHIVE+SYNC+COMPLETE;UNAUTHORIZED+SIGNAL+DETECTED;FOLLOW+THE+TRANSMISSION..." />
-
-<br>
 
 ### You weren't meant to find this repository.
 
