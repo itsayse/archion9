@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Zen+Antique&family=Rubik+Mono+One&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void: #07070d;
+    --storm-blue: #131c33;
+    --violet: #b455ff;
+    --violet-dim: #6a2fb8;
+    --cyan: #4ff0ff;
+    --flash: #f2f6ff;
+    --slate: #8892a8;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  html,body{
+    height:100%;
+    background:var(--void);
+    overflow:hidden;
+    font-family:'Rajdhani', sans-serif;
+  }
+
+  /* ---------- STAGE ---------- */
+  .stage{
+    position:relative;
+    width:100vw;
+    height:100vh;
+    height:100dvh;
+    overflow:hidden;
+    perspective:1000px;
+  }
+
+  /* ---------- VIDEO BACKGROUND ---------- */
+  .bg-video{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    filter:saturate(0.75) contrast(1.15) brightness(0.55);
+    z-index:0;
+  }
+
+  /* fallback gradient shown until video.mp4 exists / while loading */
+  .bg-fallback{
+    position:absolute;
+    inset:0;
+    z-index:-1;
+    background:
+      radial-gradient(ellipse at 50% 20%, rgba(180,85,255,0.18), transparent 55%),
+      radial-gradient(ellipse at 80% 80%, rgba(79,240,255,0.10), transparent 50%),
+      linear-gradient(180deg, #0a0d1c 0%, #05060c 60%, #030308 100%);
+  }
+
+  .bg-scan{
+    position:absolute; inset:0; z-index:1;
+    background:repeating-linear-gradient(
+      0deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px,
+      transparent 1px, transparent 3px
+    );
+    mix-blend-mode:overlay;
+    pointer-events:none;
+  }
+
+  .bg-vignette{
+    position:absolute; inset:0; z-index:2;
+    background:radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.75) 100%);
+    pointer-events:none;
+  }
+
+  /* ---------- RAIN CANVAS ---------- */
+  #rain{
+    position:absolute; inset:0; z-index:3;
+    pointer-events:none;
+  }
+
+  /* ---------- LIGHTNING FLASH ---------- */
+  .flash{
+    position:absolute; inset:0; z-index:4;
+    background:var(--flash);
+    opacity:0;
+    pointer-events:none;
+    mix-blend-mode:screen;
+  }
+  .flash.strike{
+    animation:strikeFlash 700ms ease-out;
+  }
+  @keyframes strikeFlash{
+    0%{ opacity:0; }
+    4%{ opacity:0.9; }
+    8%{ opacity:0.1; }
+    12%{ opacity:0.75; }
+    18%{ opacity:0; }
+    45%{ opacity:0; }
+    50%{ opacity:0.3; }
+    58%{ opacity:0; }
+    100%{ opacity:0; }
+  }
+
+  /* ---------- TITLE ---------- */
+  .title-wrap{
+    position:absolute; inset:0; z-index:5;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:1.4rem;
+    text-align:center;
+  }
+
+  .eyebrow{
+    font-family:'Rajdhani', sans-serif;
+    letter-spacing:0.55em;
+    font-size:clamp(0.65rem, 1.6vw, 0.9rem);
+    font-weight:600;
+    color:var(--cyan);
+    text-transform:uppercase;
+    opacity:0.85;
+    text-shadow:0 0 12px rgba(79,240,255,0.6);
+  }
+
+  .title-3d{
+    position:relative;
+    font-family:'Rubik Mono One', sans-serif;
+    font-size:clamp(3.2rem, 12vw, 9rem);
+    line-height:0.95;
+    text-transform:uppercase;
+    letter-spacing:0.02em;
+    color:#fdfdff;
+    -webkit-user-select:none; user-select:none;
+    transform-style:preserve-3d;
+    animation:floatTitle 6s ease-in-out infinite;
+    /* layered text-shadow builds the extruded 3D depth */
+    text-shadow:
+      0 1px 0 #d8c6ff,
+      0 2px 0 #c9adf9,
+      0 3px 0 #ba94f3,
+      0 4px 0 #ab7bed,
+      0 5px 0 #9c62e7,
+      0 6px 0 #8d49e1,
+      0 7px 0 #7e30db,
+      0 8px 10px rgba(0,0,0,0.6),
+      0 0 25px rgba(180,85,255,0.55),
+      0 0 60px rgba(180,85,255,0.35),
+      0 0 110px rgba(79,240,255,0.18);
+  }
+
+  .title-3d .glitch-layer{
+    position:absolute; inset:0;
+    opacity:0;
+  }
+
+  /* ---------- INTERACTIVE LETTERS ---------- */
+  .letters{
+    display:inline-block;
+  }
+
+  .letter{
+    display:inline-block;
+    cursor:default;
+    -webkit-user-select:none; user-select:none;
+    will-change:transform, color, text-shadow;
+    transition:
+      transform 320ms cubic-bezier(.2,.9,.3,1.4),
+      color 200ms ease,
+      text-shadow 200ms ease;
+  }
+
+  .letter.near{
+    color:var(--cyan);
+    text-shadow:
+      0 0 8px rgba(79,240,255,0.9),
+      0 0 22px rgba(79,240,255,0.6),
+      0 0 46px rgba(180,85,255,0.4);
+  }
+
+  .letter.hover{
+    color:var(--flash);
+    text-shadow:
+      0 0 10px rgba(255,255,255,0.95),
+      0 0 26px rgba(79,240,255,0.9),
+      0 0 56px rgba(180,85,255,0.7);
+  }
+
+  .letter.zap{
+    animation:letterZap 420ms ease-out;
+  }
+  @keyframes letterZap{
+    0%{ transform:translateY(0) scale(1) rotate(0deg); }
+    25%{ transform:translateY(-16px) scale(1.28) rotate(-6deg); color:var(--cyan); }
+    55%{ transform:translateY(4px) scale(0.92) rotate(4deg); color:var(--violet); }
+    100%{ transform:translateY(0) scale(1) rotate(0deg); }
+  }
+
+  @media (hover:none){
+    .letter.near{
+      color:var(--cyan);
+      text-shadow:0 0 10px rgba(79,240,255,0.7);
+    }
+  }
+
+  /* ---------- ELECTRIC LETTER ---------- */
+  .letter.electric{
+    animation:electricFlicker 2.6s linear infinite;
+  }
+
+  @keyframes electricFlicker{
+    0%,100%{
+      color:#fdfdff;
+      text-shadow:
+        0 1px 0 #d8c6ff, 0 2px 0 #c9adf9, 0 3px 0 #ba94f3,
+        0 4px 0 #ab7bed, 0 5px 0 #9c62e7, 0 6px 0 #8d49e1, 0 7px 0 #7e30db,
+        0 8px 10px rgba(0,0,0,0.6),
+        0 0 25px rgba(180,85,255,0.55), 0 0 60px rgba(180,85,255,0.35);
+    }
+    2%{ color:var(--cyan); text-shadow:0 0 6px var(--cyan), 0 0 16px var(--cyan), 0 0 40px var(--violet); }
+    3%{ color:#fdfdff; text-shadow:0 0 2px rgba(255,255,255,0.3); }
+    4%{ color:var(--cyan); text-shadow:0 0 10px var(--cyan), 0 0 30px var(--cyan), 0 0 60px var(--violet); }
+    6%{
+      color:#fdfdff;
+      text-shadow:
+        0 1px 0 #d8c6ff, 0 2px 0 #c9adf9, 0 3px 0 #ba94f3,
+        0 4px 0 #ab7bed, 0 5px 0 #9c62e7, 0 6px 0 #8d49e1, 0 7px 0 #7e30db,
+        0 8px 10px rgba(0,0,0,0.6),
+        0 0 25px rgba(180,85,255,0.55), 0 0 60px rgba(180,85,255,0.35);
+    }
+    38%{ color:var(--cyan); text-shadow:0 0 8px var(--cyan), 0 0 24px var(--violet), 0 0 50px var(--violet); }
+    39%{ color:#fdfdff; text-shadow:0 0 3px rgba(255,255,255,0.4); }
+    40%{
+      color:#fdfdff;
+      text-shadow:
+        0 1px 0 #d8c6ff, 0 2px 0 #c9adf9, 0 3px 0 #ba94f3,
+        0 4px 0 #ab7bed, 0 5px 0 #9c62e7, 0 6px 0 #8d49e1, 0 7px 0 #7e30db,
+        0 8px 10px rgba(0,0,0,0.6),
+        0 0 25px rgba(180,85,255,0.55), 0 0 60px rgba(180,85,255,0.35);
+    }
+    70%{ color:var(--cyan); text-shadow:0 0 10px var(--cyan), 0 0 28px var(--cyan), 0 0 55px var(--violet); }
+    72%{
+      color:#fdfdff;
+      text-shadow:
+        0 1px 0 #d8c6ff, 0 2px 0 #c9adf9, 0 3px 0 #ba94f3,
+        0 4px 0 #ab7bed, 0 5px 0 #9c62e7, 0 6px 0 #8d49e1, 0 7px 0 #7e30db,
+        0 8px 10px rgba(0,0,0,0.6),
+        0 0 25px rgba(180,85,255,0.55), 0 0 60px rgba(180,85,255,0.35);
+    }
+  }
+
+  .letter.electric.near,
+  .letter.electric.hover{
+    animation-play-state:paused;
+  }
+
+  /* ---------- SPARK LAYER (electric bolt shards) ---------- */
+  .spark-layer{
+    position:absolute; inset:0;
+    z-index:6;
+    pointer-events:none;
+    overflow:visible;
+  }
+
+  .spark{
+    position:absolute;
+    top:0; left:0;
+    filter:drop-shadow(0 0 4px var(--cyan)) drop-shadow(0 0 10px var(--violet));
+    opacity:0;
+    transform-origin:0% 0%;
+    animation:sparkPulse 260ms ease-out forwards;
+  }
+
+  @keyframes sparkPulse{
+    0%{ opacity:0; transform:scale(0.4) rotate(var(--rot,0deg)); }
+    15%{ opacity:1; transform:scale(1.05) rotate(var(--rot,0deg)); }
+    35%{ opacity:0.5; }
+    55%{ opacity:0.9; }
+    100%{ opacity:0; transform:scale(1.2) rotate(var(--rot,0deg)); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .letter.electric{ animation:none !important; }
+    .spark{ animation:none !important; display:none; }
+  }
+
+  .title-3d.thunder .glitch-layer.cyan{
+    animation:glitchCyan 700ms steps(2,end);
+  }
+  .title-3d.thunder .glitch-layer.violet{
+    animation:glitchViolet 700ms steps(2,end);
+  }
+  .title-3d.thunder{
+    animation:floatTitle 6s ease-in-out infinite, textShock 700ms ease-out;
+  }
+
+  @keyframes glitchCyan{
+    0%{ opacity:0; transform:translate(0,0); }
+    10%{ opacity:0.8; transform:translate(4px,-2px); color:var(--cyan); text-shadow:none;}
+    20%{ opacity:0; }
+    45%{ opacity:0.6; transform:translate(-3px,1px); color:var(--cyan); text-shadow:none;}
+    55%{ opacity:0; }
+    100%{ opacity:0; }
+  }
+  @keyframes glitchViolet{
+    0%{ opacity:0; transform:translate(0,0); }
+    12%{ opacity:0.7; transform:translate(-4px,2px); color:var(--violet); text-shadow:none;}
+    24%{ opacity:0; }
+    48%{ opacity:0.55; transform:translate(3px,-1px); color:var(--violet); text-shadow:none;}
+    58%{ opacity:0; }
+    100%{ opacity:0; }
+  }
+
+  @keyframes textShock{
+    0%{ transform:translate3d(0,0,0) rotateX(0deg); }
+    6%{ transform:translate3d(6px,0,0) rotateX(2deg); }
+    12%{ transform:translate3d(-6px,0,0) rotateX(-2deg); }
+    18%{ transform:translate3d(4px,0,0) rotateX(1deg); }
+    24%{ transform:translate3d(0,0,0) rotateX(0deg); }
+    100%{ transform:translate3d(0,0,0) rotateX(0deg); }
+  }
+
+  @keyframes floatTitle{
+    0%,100%{ transform:translateY(0) rotateX(6deg); }
+    50%{ transform:translateY(-10px) rotateX(3deg); }
+  }
+
+  .subtitle{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:500;
+    font-size:clamp(0.85rem, 2vw, 1.1rem);
+    letter-spacing:0.28em;
+    text-transform:uppercase;
+    color:var(--slate);
+    max-width:32rem;
+  }
+
+  .subtitle span{
+    color:var(--cyan);
+  }
+
+  /* ---------- SCREEN SHAKE on strike ---------- */
+  .stage.shake{
+    animation:shakeScreen 700ms ease-out;
+  }
+  @keyframes shakeScreen{
+    0%{ transform:translate(0,0); }
+    10%{ transform:translate(-4px,2px); }
+    20%{ transform:translate(4px,-3px); }
+    30%{ transform:translate(-3px,3px); }
+    40%{ transform:translate(3px,-2px); }
+    50%{ transform:translate(-2px,1px); }
+    60%{ transform:translate(2px,-1px); }
+    100%{ transform:translate(0,0); }
+  }
+
+  /* ---------- BOTTOM MARK ---------- */
+  .mark{
+    position:absolute;
+    bottom:2.2rem; left:50%; transform:translateX(-50%);
+    z-index:5;
+    font-size:0.68rem;
+    letter-spacing:0.4em;
+    color:var(--slate);
+    text-transform:uppercase;
+    opacity:0.6;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .title-3d, .stage.shake, .flash.strike, .title-3d.thunder{
+      animation:none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+
+  <!-- Swap this src for your uploaded file once you add video.mp4 -->
+  <video class="bg-video" id="bgVideo" autoplay muted loop playsinline preload="auto">
+    <source src="video.mp4" type="video/mp4">
+  </video>
+  <div class="bg-fallback" id="bgFallback"></div>
+
+  <div class="bg-scan"></div>
+  <div class="bg-vignette"></div>
+
+  <canvas id="rain"></canvas>
+
+  <div class="flash" id="flash"></div>
+
+  <div class="title-wrap">
+    <h1 class="title-3d" id="title">
+      <span class="letters" id="letters">
+        <span class="letter" data-i="0">A</span><span class="letter" data-i="1">Y</span><span class="letter" data-i="2">S</span><span class="letter" data-i="3">E</span>
+      </span>
+      <span class="glitch-layer cyan">AYSE</span>
+      <span class="glitch-layer violet">AYSE</span>
+    </h1>
+    <div class="spark-layer" id="sparkLayer"></div>
+  </div>
+
+</div>
+
+<script>
+  // ---------- Hide fallback once video actually has data ----------
+  const video = document.getElementById('bgVideo');
+  const fallback = document.getElementById('bgFallback');
+  video.addEventListener('loadeddata', () => { fallback.style.display = 'none'; });
+  video.addEventListener('error', () => { fallback.style.display = 'block'; });
+  // Safety net: if the video already had data by the time this script ran
+  // (e.g. served from cache, so 'loadeddata' fired before we could listen
+  // for it), hide the fallback immediately instead of waiting on an event
+  // that already happened.
+  if (video.readyState >= 2){ fallback.style.display = 'none'; }
+
+  // ---------- SOUND (autoplay-with-audio unlock) ----------
+  // Browsers block autoplay of unmuted media until the user interacts with
+  // the page, so we start muted (to guarantee the video plays immediately),
+  // then unmute the instant we get any interaction at all — a click, tap,
+  // scroll, or keypress anywhere on the page. No visible button; sound just
+  // kicks in as soon as the browser allows it.
+  let soundUnlocked = false;
+
+  function unlockSound(){
+    if (soundUnlocked) return;
+    soundUnlocked = true;
+    video.muted = false;
+    video.volume = 1;
+    const playPromise = video.play();
+    if (playPromise && playPromise.catch){
+      playPromise.catch(() => {
+        // Autoplay with sound still refused for some reason — stay muted
+        // and wait for the next interaction to try again.
+        soundUnlocked = false;
+        video.muted = true;
+      });
+    }
+  }
+
+  document.addEventListener('click', unlockSound);
+  document.addEventListener('keydown', unlockSound);
+  document.addEventListener('touchend', unlockSound);
+  document.addEventListener('scroll', unlockSound, { passive:true });
+  document.addEventListener('mousemove', unlockSound);
+
+  // Try once on load in case the browser already allows it (e.g. the site
+  // was added to an autoplay allow-list, or muted playback isn't required).
+  window.addEventListener('load', () => {
+    video.muted = false;
+    const p = video.play();
+    if (p && p.catch){
+      p.catch(() => {
+        video.muted = true;
+        video.play().catch(() => {});
+      });
+    }
+  });
+
+  // ---------- RAIN ----------
+  const canvas = document.getElementById('rain');
+  const ctx = canvas.getContext('2d');
+  let W, H, drops;
+
+  function resize(){
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    initDrops();
+  }
+
+  function initDrops(){
+    const count = Math.floor((W * H) / 9000);
+    drops = new Array(count).fill(0).map(() => makeDrop());
+  }
+
+  function makeDrop(){
+    return {
+      x: Math.random() * W,
+      y: Math.random() * H,
+      len: 14 + Math.random() * 28,
+      speed: 9 + Math.random() * 14,
+      drift: 1.6 + Math.random() * 0.8,
+      opacity: 0.12 + Math.random() * 0.35,
+      width: Math.random() < 0.15 ? 1.6 : 0.8
+    };
+  }
+
+  let windGust = 1;
+
+  function drawRain(){
+    ctx.clearRect(0, 0, W, H);
+    ctx.lineCap = 'round';
+    for (const d of drops){
+      ctx.strokeStyle = `rgba(190,210,255,${d.opacity})`;
+      ctx.lineWidth = d.width;
+      ctx.beginPath();
+      ctx.moveTo(d.x, d.y);
+      ctx.lineTo(d.x - d.drift * windGust * 2.2, d.y + d.len);
+      ctx.stroke();
+
+      d.x -= d.drift * windGust;
+      d.y += d.speed;
+
+      if (d.y > H || d.x < -20){
+        d.x = Math.random() * (W + 100);
+        d.y = -20;
+      }
+    }
+    requestAnimationFrame(drawRain);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  drawRain();
+
+  // ---------- THUNDER ----------
+  const stage = document.getElementById('stage');
+  const flash = document.getElementById('flash');
+  const title = document.getElementById('title');
+
+  function strike(){
+    flash.classList.remove('strike');
+    stage.classList.remove('shake');
+    title.classList.remove('thunder');
+    // force reflow so animation restarts
+    void flash.offsetWidth;
+    flash.classList.add('strike');
+    stage.classList.add('shake');
+    title.classList.add('thunder');
+
+    windGust = 2.4;
+    setTimeout(() => { windGust = 1; }, 900);
+
+    // extra crackle off the electric letter in sync with the strike
+    if (typeof spawnSpark === 'function'){
+      spawnSpark();
+      setTimeout(spawnSpark, 90);
+      setTimeout(spawnSpark, 180);
+    }
+  }
+
+  function scheduleStrike(){
+    const delay = 3200 + Math.random() * 5500;
+    setTimeout(() => {
+      strike();
+      scheduleStrike();
+    }, delay);
+  }
+
+  // first strike shortly after load, then loop
+  setTimeout(strike, 1400);
+  scheduleStrike();
+
+  // ---------- LETTER-BY-LETTER INTERACTIVITY ----------
+  const letterEls = Array.from(document.querySelectorAll('.letter'));
+  const NEAR_RADIUS = 160;   // px — glow/lift zone around the cursor
+  const LIFT_MAX = 22;       // px — max upward travel at zero distance
+  const TILT_MAX = 14;       // deg — max rotation at zero distance
+
+  function updateLettersFromPoint(px, py){
+    for (const el of letterEls){
+      const r = el.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      const dx = px - cx;
+      const dy = py - cy;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist < NEAR_RADIUS){
+        const t = 1 - dist / NEAR_RADIUS; // 0..1, stronger when closer
+        const lift = LIFT_MAX * t;
+        const tilt = (dx / NEAR_RADIUS) * TILT_MAX * t;
+        const scale = 1 + 0.22 * t;
+        el.style.transform = `translateY(${-lift}px) rotate(${tilt}deg) scale(${scale})`;
+        el.classList.add('near');
+        el.classList.toggle('hover', dist < 34);
+      } else {
+        el.style.transform = '';
+        el.classList.remove('near', 'hover');
+      }
+    }
+  }
+
+  function resetLetters(){
+    for (const el of letterEls){
+      el.style.transform = '';
+      el.classList.remove('near', 'hover');
+    }
+  }
+
+  window.addEventListener('mousemove', (e) => {
+    updateLettersFromPoint(e.clientX, e.clientY);
+  });
+  window.addEventListener('mouseleave', resetLetters);
+
+  window.addEventListener('touchmove', (e) => {
+    if (e.touches && e.touches[0]){
+      updateLettersFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  }, { passive:true });
+  window.addEventListener('touchend', resetLetters);
+
+  function zapLetter(el){
+    el.classList.remove('zap');
+    void el.offsetWidth; // restart animation
+    el.classList.add('zap');
+  }
+
+  letterEls.forEach((el) => {
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', () => zapLetter(el));
+    el.addEventListener('touchstart', () => zapLetter(el), { passive:true });
+  });
+
+  // ---------- ELECTRIC SPARKS off the charged letter ----------
+  const electricLetter = document.getElementById('electricLetter');
+  const sparkLayer = document.getElementById('sparkLayer');
+
+  // Jagged lightning-bolt SVG, randomized each time for a hand-drawn arc feel
+  function boltSVG(len, jag){
+    let d = `M0 0`;
+    const segments = 4 + Math.floor(Math.random() * 2);
+    let x = 0, y = 0;
+    const stepLen = len / segments;
+    for (let i = 0; i < segments; i++){
+      x += stepLen;
+      y += (Math.random() - 0.5) * jag;
+      d += ` L${x.toFixed(1)} ${y.toFixed(1)}`;
+    }
+    const w = len + 10, h = jag * 2 + 10;
+    return `<svg width="${w}" height="${h}" viewBox="${-5} ${-jag - 5} ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+      <path d="${d}" fill="none" stroke="#eafcff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="${d}" fill="none" stroke="var(--cyan)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.55"/>
+    </svg>`;
+  }
+
+  function spawnSpark(){
+    if(!electricLetter) return;
+    const r = electricLetter.getBoundingClientRect();
+    const wrapR = sparkLayer.getBoundingClientRect();
+
+    // pick a launch point somewhere along the letter's edge
+    const edge = Math.floor(Math.random() * 4); // 0 top,1 right,2 bottom,3 left
+    let sx, sy, angle;
+    if (edge === 0){ sx = r.left + Math.random()*r.width; sy = r.top; angle = -60 + Math.random()*-60; }
+    else if (edge === 1){ sx = r.right; sy = r.top + Math.random()*r.height; angle = -20 + Math.random()*40; }
+    else if (edge === 2){ sx = r.left + Math.random()*r.width; sy = r.bottom; angle = 60 + Math.random()*60; }
+    else { sx = r.left; sy = r.top + Math.random()*r.height; angle = 160 + Math.random()*40; }
+
+    const len = 22 + Math.random() * 34;
+    const jag = 6 + Math.random() * 10;
+
+    const spark = document.createElement('div');
+    spark.className = 'spark';
+    spark.style.left = (sx - wrapR.left) + 'px';
+    spark.style.top = (sy - wrapR.top) + 'px';
+    spark.style.setProperty('--rot', angle + 'deg');
+    spark.style.transform = `rotate(${angle}deg)`;
+    spark.innerHTML = boltSVG(len, jag);
+
+    sparkLayer.appendChild(spark);
+    setTimeout(() => spark.remove(), 300);
+
+    // occasionally fire a quick double-arc for a stronger crackle
+    if (Math.random() < 0.35){
+      setTimeout(spawnSpark, 60 + Math.random() * 80);
+    }
+  }
+
+  function scheduleSparks(){
+    const delay = 350 + Math.random() * 900;
+    setTimeout(() => {
+      spawnSpark();
+      scheduleSparks();
+    }, delay);
+  }
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduceMotion){
+    scheduleSparks();
+  }
+</script>
+
+</body>
+</html>
