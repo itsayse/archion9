@@ -979,11 +979,15 @@
 
   // Turns a Discord activity's asset key into a real image URL.
   // - "mp:" prefixed keys are external images proxied through Discord's media CDN.
+  // - a key that's already a full URL (some RPC integrations send this) is used as-is.
   // - otherwise it's a normal app-asset image on the app itself.
   function discordAssetUrl(applicationId, assetKey){
     if (!assetKey) return null;
     if (assetKey.startsWith('mp:')){
       return `https://media.discordapp.net/${assetKey.slice(3)}`;
+    }
+    if (assetKey.startsWith('http://') || assetKey.startsWith('https://')){
+      return assetKey;
     }
     if (!applicationId) return null;
     return `https://cdn.discordapp.com/app-assets/${applicationId}/${assetKey}.png`;
@@ -1000,9 +1004,22 @@
     const iconUrl = discordAssetUrl(activity.application_id, assets.large_image)
                  || discordAssetUrl(activity.application_id, assets.small_image);
 
-    gameIconEl.src = iconUrl || '';
-    gameNameEl.textContent = activity.name || 'Unknown game';
+    if (iconUrl){
+      gameIconEl.style.visibility = 'visible';
+      gameIconEl.onerror = () => {
+        // asset failed to load (deleted/stale app asset, bad URL, etc.) — hide
+        // rather than show a broken-image glyph.
+        gameIconEl.style.visibility = 'hidden';
+      };
+      gameIconEl.src = iconUrl;
+    } else {
+      // no resolvable icon (missing application_id/assets) — hide cleanly
+      gameIconEl.style.visibility = 'hidden';
+      gameIconEl.removeAttribute('src');
+    }
+
     // "details"/"state" are the two free-text lines games set (e.g. map name, score)
+    gameNameEl.textContent = activity.name || 'Unknown game';
     gameDetailEl.textContent = activity.details || activity.state || '';
     gameCardEl.classList.add('active');
   }
