@@ -495,7 +495,7 @@
 
   /* ---------- MUSIC PANEL (now playing + playlist, grouped as one unit) ---------- */
   .music-panel{
-    display:flex;
+    display:none; /* revealed by JS only while actually listening to Spotify */
     flex-direction:column;
     flex:1 1 20rem;
     width:100%;
@@ -512,6 +512,7 @@
     transition:border-color 180ms cubic-bezier(.34,1.56,.64,1), box-shadow 180ms cubic-bezier(.34,1.56,.64,1),
                transform 150ms cubic-bezier(.34,1.56,.64,1);
   }
+  .music-panel.active{ display:flex; }
   .music-panel:hover{
     border-color:rgba(67,209,122,0.5);
     box-shadow:0 8px 30px rgba(0,0,0,0.45), 0 0 16px rgba(67,209,122,0.2);
@@ -743,7 +744,7 @@
     <!-- ===== PRESENCE ROW: music panel (now-playing + matching playlist) plus, when a
          game is also being played, a game card with the game's own icon sitting beside it ===== -->
     <div class="presence-row" id="presenceRow">
-      <div class="music-panel">
+      <div class="music-panel" id="musicPanel">
         <div class="presence-card spotify-card idle" id="spotifyCard">
           <img class="spotify-art" id="spotifyArt" src="" alt="">
           <div class="spotify-info">
@@ -958,6 +959,7 @@
   const pfpEl              = document.getElementById('pfp');
   const pfpStatusDotEl     = document.getElementById('pfpStatusDot');
 
+  const musicPanelEl    = document.getElementById('musicPanel');
   const spotifyCardEl    = document.getElementById('spotifyCard');
   const spotifyArtEl     = document.getElementById('spotifyArt');
   const spotifyTrackEl   = document.getElementById('spotifyTrack');
@@ -1106,9 +1108,10 @@
     // since that's the one that reliably ships game assets/icons.
     updateGameDisplay(shown && shown.type === 0 ? shown : null);
 
-    // ---- Spotify (card always visible, alongside the playlist below it) ----
+    // ---- Spotify (music panel only shown while actually listening) ----
     if (data.listening_to_spotify && data.spotify){
       const sp = data.spotify;
+      musicPanelEl.classList.add('active');
       spotifyCardEl.classList.remove('idle');
       spotifyEyebrowEl.textContent = 'Listening to Spotify';
       spotifyArtEl.src = sp.album_art_url || '';
@@ -1117,8 +1120,8 @@
       spotifyTimestamps = sp.timestamps || null;
       updatePlaylistDisplay(sp.track_id, sp.song);
     } else {
+      musicPanelEl.classList.remove('active');
       spotifyCardEl.classList.add('idle');
-      spotifyEyebrowEl.textContent = 'Not listening right now';
       spotifyArtEl.src = '';
       spotifyTrackEl.textContent = '—';
       spotifyArtistEl.textContent = '—';
