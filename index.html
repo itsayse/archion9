@@ -807,7 +807,7 @@
     document.body.classList.add('started');
     enterOverlay.classList.add('hidden');
 
-    video.volume = 1;
+    video.volume = 0.55; // 45% lower than full volume
     video.currentTime = 0;
     const playPromise = video.play();
     if (playPromise && playPromise.catch){
@@ -954,7 +954,7 @@
   // 2. Join https://discord.gg/lanyard with that account (Lanyard can only
   //    see presence for members of its server, or servers its bot is in).
   // 3. Paste your ID below.
-  const LANYARD_USER_ID = '1408344014284918845';
+  const LANYARD_USER_ID = '628151749395480576';
 
   const pfpEl              = document.getElementById('pfp');
   const pfpStatusDotEl     = document.getElementById('pfpStatusDot');
